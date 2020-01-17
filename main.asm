@@ -1,10 +1,9 @@
-.org 0x200 ; create 7SEG CODE TABLE at address 0x100 (word address, which will be byte address of 200)
+.org 0x200
 data1:.DB 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R'
-
-.org 0x300 ; create 7SEG CODE TABLE at address 0x100 (word address, which will be byte address of 200)
-data2:.DB 0b01010011, 0b01010100, 0b01010101, 0b01010110, 0b01010111, 0b01011000, 0b01011001, 0b01011010, 0B00110000, 0B00110001, 0B00110010, 0B00110011, 0B00110100, 0B00110101, 0B00110110, 0B00110111, 0B00111000, 0B00111001
-;            s       t            u          v           W           X            Y           Z           0           1           2           3           4           5           6           7           8           9
-
+.org 0x300
+data2:.DB 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+.org 0x100
+MSG:.DB "hELlO",0
 
 .ORG 0X00
 JMP START
@@ -12,15 +11,29 @@ JMP START
 JMP INT0ROUTINE
 
 INT0ROUTINE:	
-//	LDI R16,'H'
-//	CALL DATAWRT
+	//LDI R16,0b00000001
+	//CALL DATAWRT
+	//CALL WriteWord
 	CALL LOADPORTC
 	CALL LOADZREGISTER1
 	CALL LOADPORTC
 	CALL LOADZREGISTER1
 	CALL DATAWRT
-
 RETI
+
+MAIN:
+	RJMP MAIN ; WE CAN STILL BE INTERRUPTED, BUT WE WILL RETURN HERE
+
+WriteWord: 
+	LDI R31,HIGH(MSG<<1)
+	LDI R30,LOW(MSG<<1);
+	WRITEWORDLOOP:
+		LPM R16,Z+
+		CPI R16,0
+		BREQ MAIN
+		CALL DATAWRT
+	RJMP WRITEWORDLOOP
+RET
 
 LoadPortC:
 	LDI R16,0X00
@@ -47,9 +60,12 @@ ret
 START:
 
 INITIALIZE_KEYPAD_INPUT:
+	.EQU KPD_PRT = PORTC
+	.EQU KPD_DDR = DDRC
+	.EQU KPD_PIN = PINC
     LDI R16, 0x00 ; load 0's into R16
-	OUT DDRC, R16 ; output 1's to configure DDRc as "input" port
-	OUT PORTC, R16 ; output 1's to configure DDRc as "input" port
+	OUT KPD_DDR, R16 ; output 1's to configure DDRc as "input" port
+	OUT KPD_PRT, R16 ; output 1's to configure DDRc as "input" port
 
 CONFIGURE_INTERRUPTS:
 	LDI R31,0X0A
@@ -97,11 +113,10 @@ INITIALIZE_LCD:
 	CALL DELAY_2ms
 	LDI R16,0X06
 	CALL CMNDWRT
+	
+	CALL WriteWord
 
-
-MAIN:
-	RJMP MAIN ; WE CAN STILL BE INTERRUPTED, BUT WE WILL RETURN HERE
-
+JMP MAIN ; WE CAN STILL BE INTERRUPTED, BUT WE WILL RETURN HERE
 
 
 CMnDWRT:
