@@ -13,16 +13,20 @@ JMP INT0ROUTINE
 INT0ROUTINE:	
 //	LDI R16,'H'
 //	CALL DATAWRT
-	IN R17,PINC
+	CALL DELAY_2ms
+	LDI R16,0X00
+	OUT DDRC,R16
+	NOP
+	IN R16,PINC
 	CALL LOADZREGISTER1
 	CALL DATAWRT
-	CLR R17
+
 RETI
 
 LoadZRegister1:
 	ldi ZL, low(2*data1)
 	ldi ZH, high(2*data1)
-	add zl,r17 ; add the BCD  value to be converted to low byte of 7SEG CODE TABLE to create an offset numerically equivalent to BCD value 
+	add zl,r16 ; add the BCD  value to be converted to low byte of 7SEG CODE TABLE to create an offset numerically equivalent to BCD value 
 	lpm r16,z ; load z into r17 from program memory from7SEG CODE TABLE using modified z register as pointer
 ret
 
