@@ -5,6 +5,7 @@ data1:.DB 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 
 data2:.DB 0b01010011, 0b01010100, 0b01010101, 0b01010110, 0b01010111, 0b01011000, 0b01011001, 0b01011010, 0B00110000, 0B00110001, 0B00110010, 0B00110011, 0B00110100, 0B00110101, 0B00110110, 0B00110111, 0B00111000, 0B00111001
 ;            s       t            u          v           W           X            Y           Z           0           1           2           3           4           5           6           7           8           9
 
+
 .ORG 0X00
 JMP START
 .ORG 0X02
@@ -13,15 +14,21 @@ JMP INT0ROUTINE
 INT0ROUTINE:	
 //	LDI R16,'H'
 //	CALL DATAWRT
-	CALL DELAY_2ms
-	LDI R16,0X00
-	OUT DDRC,R16
-	NOP
-	IN R16,PINC
+	CALL LOADPORTC
+	CALL LOADZREGISTER1
+	CALL LOADPORTC
 	CALL LOADZREGISTER1
 	CALL DATAWRT
 
 RETI
+
+LoadPortC:
+	LDI R16,0X00
+	OUT DDRC,R16
+	NOP
+	IN R16,PINC
+RET
+	;STS MYTEMP,R16
 
 LoadZRegister1:
 	ldi ZL, low(2*data1)
